@@ -4,15 +4,16 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /src
-COPY ["server/PipelinesWebApi/PipelinesWebApi.csproj", "PipelinesWebApi/"]
-RUN dotnet restore "server/PipelinesWebApi/PipelinesWebApi.csproj"
-COPY . .
-WORKDIR "/src/PipelinesWebApi"
-RUN dotnet build "PipelinesWebApi.csproj" -c Release -o /app/build
+COPY *.sln .
+COPY server/PipelinesWebApi/*.csproj ./server/PipelinesWebApi/
+COPY server/PipelinesWebApi.Tests/*.csproj ./server/PipelinesWebApi.Tests/
+RUN dotnet restore
+
+COPY server/PipelinesWebApi/. ./server/PipelinesWebApi/
+COPY server/PipelinesWebApi.Tests/. ./server/PipelinesWebApi.Tests/
 
 FROM build AS publish
-RUN dotnet publish "PipelinesWebApi.csproj" -c Release -o /app/publish
+RUN dotnet publish ./server/PipelinesWebApi/PipelinesWebApi.csproj -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
